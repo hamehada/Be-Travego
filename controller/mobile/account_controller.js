@@ -76,3 +76,146 @@ exports.getHotel = function (req, res)  {
             res.status(200).json(results[0]);
         });
     };
+
+    exports.addKendaraan = function (req,res) {
+        upload(req, res, function (err) {
+          if (err instanceof multer.MulterError) {
+              console.log(err);
+              return res.status(500).json({ success: false, message: 'Failed to upload image.' });
+          } else if (err) {
+              console.log(err);
+              return res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+          }
+          
+          let tipeKendaraan = req.body.tipe_kendaraan;
+          let noKendaraan = req.body.no_kendaraan;
+          let jumlahSeat = req.body.jumlah_seat;
+          let namaKendaraan = req.body.nama_kendaraan;
+          let hargaSewa = req.body.harga_sewa;
+          let lokasiPenjemputan = req.body.lokasi_penjemputan;
+          let waktuPenjemputan = req.body.waktu_penjemputan;
+          let picture = req.file.path ? req.file.filename : null;
+        
+      
+          connection.query(`INSERT INTO kendaraan(tipe_kendaraan, no_kendaraan, jumlah_seat, nama_kendaraan,gambar_kendaraan,harga_sewa,lokasi_penjemputan,waktu_penjemputan)
+                          VALUES(?,?,?,?,?,?,?,?)`, [tipeKendaraan, noKendaraan, jumlahSeat,namaKendaraan, picture,hargaSewa,lokasiPenjemputan,waktuPenjemputan],
+              function (error, rows, fields) {
+                  if (error) {
+                      console.log(error);
+                      return res.status(500).json({ success: false, message: 'An error occurred while adding menu.' });
+                  } else {
+                      return res.status(200).json({ success: true, message: 'Menu added successfully.' });
+                  }
+              }
+          );
+      });
+      };
+
+      const checkIdExists = (table, column, id) => {
+        return new Promise((resolve, reject) => {
+            const sql = `SELECT COUNT(*) as count FROM ?? WHERE ?? = ?`;
+            db.query(sql, [table, column, id], (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results[0].count > 0);
+                }
+            });
+        });
+    };
+
+    exports.addPesanankendaraan  = async (req, res) => {
+        const { id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan } = req.body;
+    
+        try {
+            const [pesananExists, kendaraanExists] = await Promise.all([
+                checkIdExists('pesanan', 'id_pesanan', id_pesanan),
+                checkIdExists('kendaraan', 'id_kendaraan', id_kendaraan)
+            ]);
+    
+            if (!pesananExists) {
+                return res.status(400).send('Invalid id_pesanan');
+            }
+            if (!kendaraanExists) {
+                return res.status(400).send('Invalid id_kendaraan');
+            }
+    
+            const sql = 'INSERT INTO pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan) VALUES (?, ?, ?, ?, ?, ?, ?)';
+            db.query(sql, [id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan], (err, result) => {
+                if (err) {
+                    console.error('Error executing query:', err);
+                    res.status(500).send('Error adding pesanan_kendaraan');
+                    return;
+                }
+                res.status(200).send('Pesanan_kendaraan added successfully');
+            });
+        } catch (err) {
+            console.error('Error checking IDs:', err);
+            res.status(500).send('Error checking IDs');
+        }
+    };
+
+    exports.addDetailPesanan = async (req, res) => {
+        const { id_paket_wisata, qty, harga, sub_total } = req.body;
+        const userId = req.user.id; // Ambil ID user dari objek req.user yang diset oleh middleware
+    
+        // Query untuk mendapatkan id_pesanan berdasarkan user_id
+        const getPesananSql = 'SELECT id_pesanan FROM pesanan WHERE id_user = ? ORDER BY tgl_pesanan DESC LIMIT 1';
+    
+        db.query(getPesananSql, [userId], (err, results) => {
+            if (err) {
+                console.error('Error executing query:', err);
+                return res.status(500).send('Error retrieving pesanan');
+            }
+    
+            if (results.length === 0) {
+                return res.status(404).send('No pesanan found for this user');
+            }
+    
+            const id_pesanan = results[0].id_pesanan;
+    
+            // Buat query untuk memasukkan data ke tabel detail_pesanan
+            const insertDetailPesananSql = 'INSERT INTO detail_pesanan (id_paket_wisata, qty, harga, sub_total, id_pesanan) VALUES (?, ?, ?, ?, ?)';
+    
+            db.query(insertDetailPesananSql, [id_paket_wisata, qty, harga, sub_total, id_pesanan], (err, result) => {
+                if (err) {
+                    console.error('Error executing query:', err);
+                    return res.status(500).send('Error adding detail pesanan');
+                }
+                res.status(200).send('Detail pesanan added successfully');
+            });
+        });
+    };
+
+    exports.addDetailPesananKendaraan = async (req, res) => {
+        const { id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan } = req.body;
+        const userId = req.user.id; // Ambil ID user dari objek req.user yang diset oleh middleware
+    
+        // Query untuk mendapatkan id_pesanan berdasarkan user_id
+        const getPesananSql = 'SELECT id_pesanan FROM pesanan WHERE id_user = ? ORDER BY tgl_pesanan DESC LIMIT 1';
+    
+        db.query(getPesananSql, [userId], (err, results) => {
+            if (err) {
+                console.error('Error executing query:', err);
+                return res.status(500).send('Error retrieving pesanan');
+            }
+    
+            if (results.length === 0) {
+                return res.status(404).send('No pesanan found for this user');
+            }
+    
+            const id_pesanan = results[0].id_pesanan;
+    
+            // Buat query untuk memasukkan data ke tabel detail_pesanan_kendaraan
+            const insertDetailPesananKendaraanSql = 'INSERT INTO detail_pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    
+            db.query(insertDetailPesananKendaraanSql, [id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan], (err, result) => {
+                if (err) {
+                    console.error('Error executing query:', err);
+                    return res.status(500).send('Error adding detail pesanan kendaraan');
+                }
+                res.status(200).send('Detail pesanan kendaraan added successfully');
+            });
+        });
+    };
+    
