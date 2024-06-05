@@ -31,6 +31,20 @@ exports.getkendaraan = function (req, res)  {
       });
     };
 
+    exports.getkendaraan = function (req, res)  {
+        
+          const sql = 'SELECT * FROM kendaraan';
+          db.query(sql, (err, result) => {
+            if (err) {
+              console.log(err);
+              res.send(err);
+            } else {
+              console.log(result);
+              res.send(result[0]);
+            }
+          });
+        };
+
 exports.getHotel = function (req, res)  {
   const {id} = req.params;
   
@@ -48,9 +62,11 @@ exports.getHotel = function (req, res)  {
   
      exports.getPaketwisata = (req, res) => {
         const sql= `
-            SELECT pw.*, w.gambar_wisata
-            FROM paket_wisata pw
-            JOIN wisata w ON pw.id_wisata = w.id_wisata
+        SELECT * FROM paket_wisata pw 
+        INNER JOIN wisata w ON pw.id_wisata = w.id_wisata 
+        INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
+        INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
+        INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
         `;
     
         db.query(sql, (err, results) => {

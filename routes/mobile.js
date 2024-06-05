@@ -24,6 +24,9 @@ module.exports = function (app) {
     app.route(`/api/user/getkendaraan/:id`)
     .get(mobileUser.account_controller.getkendaraan)
 
+    app.route(`/api/user/getkendaraan/`)
+    .get(mobileUser.account_controller.getkendaraan)
+
     app.route(`/api/user/getHotel/:id`)
     .get(mobileUser.account_controller.getHotel)
 
