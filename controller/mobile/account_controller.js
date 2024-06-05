@@ -45,18 +45,23 @@ exports.getHotel = function (req, res)  {
         });
       };
 
-      exports.getPaketwisata = (req, res) => {
-        const sql = 'SELECT * FROM paket_wisata';
-        
-        db.query(sql, (err, results) => {
-            if (err) {
-                console.error('Error executing query:', err);
-                return res.status(500).send('Error retrieving paket_wisata');
-            }
-    
-            res.status(200).json(results);
-        });
-    };
+  exports.getPaketwisata = (req, res) => {
+    const sql = `
+        SELECT pw.*, w.gambar_wisata
+        FROM paket_wisata pw
+        JOIN wisata w ON pw.id_wisata = w.id_wisata
+    `;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            return res.status(500).send('Error retrieving paket_wisata');
+        }
+
+        res.status(200).json(results);
+    });
+};
+
 
     exports.datadiri = (req, res) => {
         const userId = req.user.id; // Ambil ID user dari objek req.user yang diset oleh middleware
