@@ -18,6 +18,8 @@ routesUser(app);
 var routesAdmin = require("../routes/admin");
 routesAdmin(app);
 
+app.use(express.static(__dirname.replace('/src', '') + '/images_wisata'));
+app.use(express.static(__dirname.replace('/src', '') + '/images/transport'));
 
 app.listen(3000, () => {
     console.log('wooop');

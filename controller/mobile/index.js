@@ -1,2 +1,2 @@
 exports.userController = require('./userController')
-// exports.userController = require('./account_controller')
+exports.account_controller = require('./account_controller')

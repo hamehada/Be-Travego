@@ -5,6 +5,10 @@ const authMiddleware = require('../middleware/authMiddelware');
 module.exports = function (app) {
     let mobileUser = require("../controller/mobile");
 
+    app.route(`/storage/wisata/:name`).get(mobileUser.userController.getImageWisata);
+
+    app.route(`/storage/transport/:name`).get(mobileUser.userController.getImageTransport);
+
     app.route(`/api/user/register`)
     .post(mobileUser.userController.register);
 

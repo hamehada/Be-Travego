@@ -2,6 +2,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../../src/models/connection');
+const path = require('path');
 const secretKey = ('tr4v3g0')
 
 // const verifikasi = require("./middleware/verifikasi");
@@ -9,7 +10,7 @@ const secretKey = ('tr4v3g0')
 exports.getUser = function (req, res) {
     const idUser = req.id_user;
     const sqlQuery = "SELECT * FROM user ";
-    
+
     db.query(sqlQuery, (err, result) => {
         if (err) {
             console.log(err);
@@ -103,18 +104,38 @@ exports.login = function (req, res) {
     });
 };
 
-exports.editUser = function(req, res) {
-    const id_user = req.params.id;
-    const { nama, no_hp, email, password, username } = req.body;
+    exports.editUser = function(req, res) {
+        const id_user = req.params.id;
+        const { nama, no_hp, email, password, username } = req.body;
 
-    const sql = ' UPDATE user SET nama = ?, no_hp = ?, email = ?, password = ?, username = ? WHERE id_user =?';
+        const sql = ' UPDATE user SET nama = ?, no_hp = ?, email = ?, password = ?, username = ? WHERE id_user =?';
 
-    db.query(sql, [nama, no_hp, email, password, username, id_user], (err, result) => {
-    if (err) {
-        console.log(err);
-    } else {
-        res.send(result);
-        console.log(result);
-    }
-});
+        db.query(sql, [nama, no_hp, email, password, username, id_user], (err, result) => {
+        if (err) {
+            console.log(err);
+        } else {
+            res.send(result);
+            console.log(result);
+        }
+    });
 };
+
+exports.getImageWisata = (req, res) => {
+    try {
+        const { name } = req.params;
+        const filePath = path.join(__dirname.replace('controller\\mobile', ''), `images_wisata/${name}`);
+        res.sendFile(filePath);
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+exports.getImageTransport = (req, res) => {
+    try {
+        const { name } = req.params;
+        const filePath = path.join(__dirname.replace('controller\\mobile', ''), `images/transport/${name}`);
+        res.sendFile(filePath);
+    } catch (error) {
+        console.log(error)
+    }
+}
