@@ -29,11 +29,12 @@ module.exports = function (app) {
     app.route(`/api/user/datadiri/`)
     .get(authenticateToken,mobileUser.account_controller.datadiri)
 
-    app.route(`/api/user/addPesanankendaraan/`)
-    .post(mobileUser.account_controller.addPesanankendaraan)
-
     app.route(`/api/user/addDetailPesanan/`)
     .post(authenticateToken,mobileUser.account_controller.addDetailPesanan)
+
+    app.route(`/api/user/addPesanankendaraan/`)
+    .post(authenticateToken,mobileUser.account_controller.addPesananKendaraan)
+
 
     app.route(`/api/user/addDetailPesananKendaraan/`)
     .post(authenticateToken,mobileUser.account_controller.addDetailPesananKendaraan)
