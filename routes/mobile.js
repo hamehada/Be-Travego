@@ -45,6 +45,9 @@ module.exports = function (app) {
     app.route(`/api/user/createPesananWithDetailsKendaraan/`)
     .post(authenticateToken,mobileUser.account_controller.createPesananWithDetailsKendaraan)
 
+    app.route(`/api/user/viewPesanan/`)
+    .get(authenticateToken,mobileUser.account_controller.viewPesanan)
+
     // app.route(`/api/user/addPesanankendaraan/`)
     // .post(authenticateToken,mobileUser.account_controller.addPesananKendaraan)
 

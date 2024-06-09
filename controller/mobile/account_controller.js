@@ -42,7 +42,7 @@ exports.getkendaraan = function (req, res)  {
               res.send(err);
             } else {
               console.log(result);
-              res.send(result[0]);
+              res.send(result);
             }
           });
         };
@@ -82,12 +82,12 @@ exports.getHotel = function (req, res)  {
  
     
 
-    exports.datadiri = (req, res) => {
-        const userId = req.user.id; // Ambil ID user dari objek req.user yang diset oleh middleware
-    
-        const sql = 'SELECT nama, no_hp, email FROM user WHERE id_user = ?';
+    exports.datadiri = async (req, res) => {
+        const id_user = req.user.id_user; // Ambil ID user dari objek req.user yang diset oleh middleware
         
-        db.query(sql, [userId], (err, results) => {
+        const sql = 'SELECT nama, no_hp, email, username FROM user WHERE id_user = ?';
+    
+        db.query(sql, [id_user], (err, results) => {
             if (err) {
                 console.error('Error executing query:', err);
                 return res.status(500).send('Error retrieving user details');
@@ -209,6 +209,27 @@ exports.getHotel = function (req, res)  {
             });
         });
     };
+    exports.viewPesanan = async (req, res) => {
+        const sql = `
+            SELECT * FROM pesanan p
+            INNER JOIN detail_pesanan dp ON p.id_pesanan = dp.id_pesanan
+            INNER JOIN paket_wisata pw ON dp.id_paket_wisata = pw.id_paket
+            INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
+            INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
+            INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
+            INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
+        `;
+    
+        db.query(sql, (err, results) => {
+            if (err) {
+                console.error('Error executing query:', err);
+                return res.status(500).json({ success: false, message: 'Error retrieving data' });
+            }
+    
+            res.status(200).json({ success: true, data: results });
+        });
+    };
+    
 
     // exports.addPesanankendaraan  = async (req, res) => {
     //     const { id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan } = req.body;
