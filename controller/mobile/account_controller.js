@@ -401,90 +401,85 @@ db.query('SELECT id_paket FROM paket_wisata WHERE id_paket = ?', [id_paket], (er
         });
     });
 });
-    
-    
+};
+exports.createPesananWithDetailsKendaraan = async(req, res) => {
+    const {
+        tgl_pesanan,
+        catatan,
+        id_kendaraan,
+        qty,
+        harga,
+        subtotal,
+        lokasi_penjemputan,
+        waktu_penjemputan
+    } = req.body;
+    const id_user = req.user.id_user; // Mengambil id_user dari user yang sedang login
 
-    exports.createPesananWithDetailKendaraan = async (req, res) => {
-        const {
-            tgl_pesanan,
-            id_admin,
-            id_user,
-            catatan,
-            details // details should be an array of { id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan }
-        } = req.body;
-    
-        // Validasi input
-        if (!tgl_pesanan || !id_admin || !id_user || !details || details.length === 0) {
-            return res.status(400).json({ success: false, message: 'Semua field wajib diisi.' });
+    // Validasi input
+    if (!tgl_pesanan || !id_kendaraan || !qty || !harga || !subtotal || !lokasi_penjemputan || !waktu_penjemputan) {
+        return res.status(400).json({ success: false, message: 'Semua field wajib diisi.' });
+    }
+
+    // Mulai transaksi
+    db.beginTransaction((err) => {
+        if (err) {
+            console.error('Error starting transaction:', err);
+            return res.status(500).json({ success: false, message: 'Gagal memulai transaksi.' });
         }
-    
-        // Mulai transaksi
-        db.beginTransaction((err) => {
-            if (err) {
-                console.log(err);
-                return res.status(500).json({ success: false, message: 'Gagal memulai transaksi.' });
+
+        // SQL query untuk menambahkan pesanan baru
+        const sqlInsertPesanan = `
+            INSERT INTO pesanan (tgl_pesanan, id_user, catatan, total)
+            VALUES (?, ?, ?, 0)`;
+        const pesananValues = [tgl_pesanan, id_user, catatan];
+
+        db.query(sqlInsertPesanan, pesananValues, (error, result) => {
+            if (error) {
+                console.error('Error adding pesanan:', error);
+                return db.rollback(() => {
+                    res.status(500).json({ success: false, message: 'Terjadi kesalahan saat membuat pesanan.' });
+                });
             }
-    
-            // SQL query untuk menambahkan pesanan baru
-            const sqlInsertPesanan = `
-                INSERT INTO pesanan (tgl_pesanan, id_admin, id_user, catatan, total)
-                VALUES (?, ?, ?, ?, 0)`;
-            const pesananValues = [tgl_pesanan, id_admin, id_user, catatan];
-    
-            db.query(sqlInsertPesanan, pesananValues, (err, result) => {
-                if (err) {
+
+            const id_pesanan = result.insertId;
+
+            // Buat query untuk memasukkan data ke tabel detail_pesanan_kendaraan
+            const sqlInsertDetailPesanan = `
+                INSERT INTO detail_pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan)
+                VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            const detailValues = [id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan];
+
+            db.query(sqlInsertDetailPesanan, detailValues, (error) => {
+                if (error) {
+                    console.error('Error adding detail pesanan:', error);
                     return db.rollback(() => {
-                        console.log(err);
-                        res.status(500).json({ success: false, message: 'Terjadi kesalahan saat membuat pesanan.' });
+                        res.status(500).json({ success: false, message: 'Terjadi kesalahan saat menambahkan detail pesanan.' });
                     });
                 }
-    
-                const id_pesanan = result.insertId;
-                let totalPesanan = 0;
-    
-                // Buat query untuk memasukkan data ke tabel detail_pesanan_kendaraan
-                const sqlInsertDetailPesananKendaraan = `
-                    INSERT INTO detail_pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan)
-                    VALUES ?`;
-    
-                const detailValues = details.map(detail => {
-                    totalPesanan += detail.subtotal;
-                    return [id_pesanan, detail.id_kendaraan, detail.qty, detail.harga, detail.subtotal, detail.lokasi_penjemputan, detail.waktu_penjemputan];
-                });
-    
-                db.query(sqlInsertDetailPesananKendaraan, [detailValues], (err, result) => {
-                    if (err) {
+
+                // Update kolom total di tabel pesanan
+                const sqlUpdateTotal = `UPDATE pesanan SET total = ? WHERE id_pesanan = ?`;
+                db.query(sqlUpdateTotal, [subtotal, id_pesanan], (error) => {
+                    if (error) {
+                        console.error('Error updating pesanan total:', error);
                         return db.rollback(() => {
-                            console.log(err);
-                            res.status(500).json({ success: false, message: 'Terjadi kesalahan saat menambahkan detail pesanan kendaraan.' });
+                            res.status(500).json({ success: false, message: 'Terjadi kesalahan saat memperbarui total pesanan.' });
                         });
                     }
-    
-                    // Update kolom total di tabel pesanan
-                    const sqlUpdateTotal = `UPDATE pesanan SET total = ? WHERE id_pesanan = ?`;
-                    db.query(sqlUpdateTotal, [totalPesanan, id_pesanan], (err, result) => {
-                        if (err) {
+
+                    // Commit transaksi
+                    db.commit((error) => {
+                        if (error) {
+                            console.error('Error committing transaction:', error);
                             return db.rollback(() => {
-                                console.log(err);
-                                res.status(500).json({ success: false, message: 'Terjadi kesalahan saat memperbarui total pesanan.' });
+                                res.status(500).json({ success: false, message: 'Gagal menyimpan transaksi.' });
                             });
                         }
-    
-                        // Commit transaksi
-                        db.commit((err) => {
-                            if (err) {
-                                return db.rollback(() => {
-                                    console.log(err);
-                                    res.status(500).json({ success: false, message: 'Gagal menyimpan transaksi.' });
-                                });
-                            }
-    
-                            res.status(201).json({ success: true, message: 'Pesanan berhasil dibuat.', id_pesanan });
-                        });
+
+                        res.status(201).json({ success: true, message: 'Pesanan berhasil dibuat.', id_pesanan });
                     });
                 });
             });
         });
-    };
-    };
-    
+    });
+};   

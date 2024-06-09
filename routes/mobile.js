@@ -42,14 +42,14 @@ module.exports = function (app) {
     app.route(`/api/user/createPesananWithDetails/`)
     .post(authenticateToken,mobileUser.account_controller.createPesananWithDetails)
 
-    // app.route(`/api/user/createPesananWithDetailKendaraan/`)
-    // .post(authenticateToken,mobileUser.account_controller.createPesananWithDetailKendaraan)
+    app.route(`/api/user/createPesananWithDetailsKendaraan/`)
+    .post(authenticateToken,mobileUser.account_controller.createPesananWithDetailsKendaraan)
 
-    app.route(`/api/user/addPesanankendaraan/`)
-    .post(authenticateToken,mobileUser.account_controller.addPesananKendaraan)
+    // app.route(`/api/user/addPesanankendaraan/`)
+    // .post(authenticateToken,mobileUser.account_controller.addPesananKendaraan)
 
 
-    app.route(`/api/user/addDetailPesananKendaraan/`)
-    .post(authenticateToken,mobileUser.account_controller.addDetailPesananKendaraan)
+    // app.route(`/api/user/addDetailPesananKendaraan/`)
+    // .post(authenticateToken,mobileUser.account_controller.addDetailPesananKendaraan)
 }
 
