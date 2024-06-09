@@ -126,8 +126,8 @@ exports.getImageWisata = (req, res) => {
     try {
         const { name } = req.params;
         const filePath = path.join(__dirname, `../../images_wisata/${name}`);
-        console.log(filePath)
-        res.sendFile(`../../images_wisata/${name}`);
+        console.log(__dirname);
+        res.sendFile(filePath);
     } catch (error) {
         console.log(error)
     }
@@ -136,8 +136,8 @@ exports.getImageWisata = (req, res) => {
 exports.getImageTransport = (req, res) => {
     try {
         const { name } = req.params;
-        const filePath = path.join(__dirname.replace('controller\\mobile', ''), `../../images/transport/${name}`);
-        res.sendFile(`../../images/transport/${name}`);
+        const filePath = path.join(__dirname, `../../images/transport/${name}`);
+        res.sendFile(filePath);
     } catch (error) {
         console.log(error)
     }
