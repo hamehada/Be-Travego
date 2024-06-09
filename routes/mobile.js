@@ -1,7 +1,7 @@
 "use strict";
 
 const { authenticateToken } = require('../middleware/auth_user');
-const authMiddleware = require('../middleware/authMiddelware');
+//const { verifyToken } = require('../middleware/verifyToken');
 module.exports = function (app) {
     let mobileUser = require("../controller/mobile");
 
@@ -38,6 +38,12 @@ module.exports = function (app) {
 
     app.route(`/api/user/addDetailPesanan/`)
     .post(authenticateToken,mobileUser.account_controller.addDetailPesanan)
+
+    app.route(`/api/user/createPesananWithDetails/`)
+    .post(authenticateToken,mobileUser.account_controller.createPesananWithDetails)
+
+    // app.route(`/api/user/createPesananWithDetailKendaraan/`)
+    // .post(authenticateToken,mobileUser.account_controller.createPesananWithDetailKendaraan)
 
     app.route(`/api/user/addPesanankendaraan/`)
     .post(authenticateToken,mobileUser.account_controller.addPesananKendaraan)

@@ -1,8 +1,10 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../../src/models/connection');
-const authMiddleware = require('../../middleware/authMiddelware');
+const authMiddleware = require('../../middleware/verifyToken');
 const secretKey = ('tr4v3g0')
+const mysql = require('mysql2/promise');
+require('dotenv').config();
 
 
 exports.getWisata = function (req, res) {
@@ -304,3 +306,185 @@ exports.getHotel = function (req, res)  {
             });
         });
     };
+
+    exports.createPesananWithDetails = async (req, res) => {
+        const {
+    tgl_pesanan,
+    catatan,
+    id_paket,
+    qty,
+    harga,
+    sub_total
+    } = req.body;
+const id_user = req.user.id_user
+
+// Validasi input
+if (!tgl_pesanan || !id_paket || !qty || !harga || !sub_total) {
+    return res.status(400).json({ success: false, message: 'Semua field wajib diisi.' });
+}
+
+// Cek apakah id_paket_wisata valid
+db.query('SELECT id_paket FROM paket_wisata WHERE id_paket = ?', [id_paket], (error, results) => {
+    if (error) {
+        console.error('Error checking id_paket_wisata:', error);
+        return res.status(500).json({ success: false, message: 'Terjadi kesalahan saat memproses pesanan.' });
+    }
+
+    if (results.length === 0) {
+        return res.status(400).json({ success: false, message: 'id_paket_wisata tidak valid.' });
+    }
+
+    // Mulai transaksi
+    db.beginTransaction((err) => {
+        if (err) {
+            console.error('Error starting transaction:', err);
+            return res.status(500).json({ success: false, message: 'Gagal memulai transaksi.' });
+        }
+
+        // SQL query untuk menambahkan pesanan baru
+        const sqlInsertPesanan = `
+            INSERT INTO pesanan (tgl_pesanan, id_user, catatan, total)
+            VALUES (?, ?, ?, 0)`;
+        const pesananValues = [tgl_pesanan, id_user, catatan];
+
+        db.query(sqlInsertPesanan, pesananValues, (error, result) => {
+            if (error) {
+                console.error('Error adding pesanan:', error);
+                db.rollback(() => {
+                    res.status(500).json({ success: false, message: 'Terjadi kesalahan saat memproses pesanan.' });
+                });
+                return;
+            }
+
+            const id_pesanan = result.insertId;
+
+            // Buat query untuk memasukkan data ke tabel detail_pesanan
+            const sqlInsertDetailPesanan = `
+                INSERT INTO detail_pesanan (id_paket_wisata, qty, harga, sub_total, id_pesanan)
+                VALUES (?, ?, ?, ?, ?)`;
+            const detailValues = [id_paket, qty, harga, sub_total, id_pesanan];
+
+            db.query(sqlInsertDetailPesanan, detailValues, (error) => {
+                if (error) {
+                    console.error('Error adding detail pesanan:', error);
+                    db.rollback(() => {
+                        res.status(500).json({ success: false, message: 'Terjadi kesalahan saat memproses pesanan.' });
+                    });
+                    return;
+                }
+
+                // Update kolom total di tabel pesanan
+                const sqlUpdateTotal = `UPDATE pesanan SET total = ? WHERE id_pesanan = ?`;
+                db.query(sqlUpdateTotal, [sub_total, id_pesanan], (error) => {
+                    if (error) {
+                        console.error('Error updating pesanan total:', error);
+                        db.rollback(() => {
+                            res.status(500).json({ success: false, message: 'Terjadi kesalahan saat memproses pesanan.' });
+                        });
+                        return;
+                    }
+
+                    // Commit transaksi
+                    db.commit((error) => {
+                        if (error) {
+                            console.error('Error committing transaction:', error);
+                            db.rollback(() => {
+                                res.status(500).json({ success: false, message: 'Gagal menyimpan transaksi.' });
+                            });
+                            return;
+                        }
+
+                        res.status(201).json({ success: true, message: 'Pesanan berhasil dibuat.', id_pesanan });
+                    });
+                });
+            });
+        });
+    });
+});
+    
+    
+
+    exports.createPesananWithDetailKendaraan = async (req, res) => {
+        const {
+            tgl_pesanan,
+            id_admin,
+            id_user,
+            catatan,
+            details // details should be an array of { id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan }
+        } = req.body;
+    
+        // Validasi input
+        if (!tgl_pesanan || !id_admin || !id_user || !details || details.length === 0) {
+            return res.status(400).json({ success: false, message: 'Semua field wajib diisi.' });
+        }
+    
+        // Mulai transaksi
+        db.beginTransaction((err) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ success: false, message: 'Gagal memulai transaksi.' });
+            }
+    
+            // SQL query untuk menambahkan pesanan baru
+            const sqlInsertPesanan = `
+                INSERT INTO pesanan (tgl_pesanan, id_admin, id_user, catatan, total)
+                VALUES (?, ?, ?, ?, 0)`;
+            const pesananValues = [tgl_pesanan, id_admin, id_user, catatan];
+    
+            db.query(sqlInsertPesanan, pesananValues, (err, result) => {
+                if (err) {
+                    return db.rollback(() => {
+                        console.log(err);
+                        res.status(500).json({ success: false, message: 'Terjadi kesalahan saat membuat pesanan.' });
+                    });
+                }
+    
+                const id_pesanan = result.insertId;
+                let totalPesanan = 0;
+    
+                // Buat query untuk memasukkan data ke tabel detail_pesanan_kendaraan
+                const sqlInsertDetailPesananKendaraan = `
+                    INSERT INTO detail_pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan)
+                    VALUES ?`;
+    
+                const detailValues = details.map(detail => {
+                    totalPesanan += detail.subtotal;
+                    return [id_pesanan, detail.id_kendaraan, detail.qty, detail.harga, detail.subtotal, detail.lokasi_penjemputan, detail.waktu_penjemputan];
+                });
+    
+                db.query(sqlInsertDetailPesananKendaraan, [detailValues], (err, result) => {
+                    if (err) {
+                        return db.rollback(() => {
+                            console.log(err);
+                            res.status(500).json({ success: false, message: 'Terjadi kesalahan saat menambahkan detail pesanan kendaraan.' });
+                        });
+                    }
+    
+                    // Update kolom total di tabel pesanan
+                    const sqlUpdateTotal = `UPDATE pesanan SET total = ? WHERE id_pesanan = ?`;
+                    db.query(sqlUpdateTotal, [totalPesanan, id_pesanan], (err, result) => {
+                        if (err) {
+                            return db.rollback(() => {
+                                console.log(err);
+                                res.status(500).json({ success: false, message: 'Terjadi kesalahan saat memperbarui total pesanan.' });
+                            });
+                        }
+    
+                        // Commit transaksi
+                        db.commit((err) => {
+                            if (err) {
+                                return db.rollback(() => {
+                                    console.log(err);
+                                    res.status(500).json({ success: false, message: 'Gagal menyimpan transaksi.' });
+                                });
+                            }
+    
+                            res.status(201).json({ success: true, message: 'Pesanan berhasil dibuat.', id_pesanan });
+                        });
+                    });
+                });
+            });
+        });
+    };
+    };
+    

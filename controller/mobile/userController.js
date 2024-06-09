@@ -3,8 +3,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../../src/models/connection');
 const path = require('path');
-const secretKey = ('tr4v3g0')
+const secretKey = ('tr4v3g0');
+const dotenv = require('dotenv');
 
+dotenv.config();
 // const verifikasi = require("./middleware/verifikasi");
 
 exports.getUser = function (req, res) {
@@ -56,7 +58,7 @@ exports.register = function (req, res) {
             const token = jwt.sign({ id: result.insertId, username: userName, email: Email }, secretKey, { expiresIn: '1h' });
 
             // Kirim token sebagai respons
-            res.status(201).json({ success: true, message: 'Pengguna berhasil didaftarkan.', token: token });
+            res.status(201).json({ success: true, message: 'Pengguna berhasil didaftarkan.' });
         });
     });
 };
@@ -96,7 +98,7 @@ exports.login = function (req, res) {
             }
 
             // Buat token JWT
-            const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, secretKey, { expiresIn: '1h' });
+            const token = jwt.sign({ id_user: user.id_user }, secretKey, { expiresIn: '1h' });
 
             // Kirim token sebagai respons
             res.status(200).json({ success: true, message: 'Login berhasil.', token: token });
