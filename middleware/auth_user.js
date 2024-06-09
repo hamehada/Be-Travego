@@ -12,7 +12,7 @@ exports.authenticateToken = (req, res, next) => {
 
     if (!user.id_user)
       return res.status(403).json({ auth: false, message: "Anda bukan user" });
-    const currentTime = Math.floor(Date.now() / 1000); // Waktu saat ini dalam detik
+    const currentTime = Math.floor(Date.now() / 100000); // Waktu saat ini dalam detik
     if (user.exp && user.exp < currentTime)
       return res.status(403).json({ auth: false, message: "Token expired" });
 

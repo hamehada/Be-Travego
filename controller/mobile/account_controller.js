@@ -205,6 +205,7 @@ exports.getHotel = function (req, res)  {
             INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
             INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
         `;
+        const userId = req.user.id;
     
         db.query(sql, (err, results) => {
             if (err) {
