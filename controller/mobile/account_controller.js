@@ -18,20 +18,6 @@ exports.getWisata = function (req, res) {
     });
 };
 
-exports.getkendaraan = function (req, res)  {
-    const {id} = req.params;
-    
-      const sql = 'SELECT * FROM kendaraan WHERE id_kendaraan = ?';
-      db.query(sql, [id], (err, result) => {
-        if (err) {
-          console.log(err);
-          res.send(err);
-        } else {
-          console.log(result);
-          res.send(result[0]);
-        }
-      });
-    };
 
     exports.getkendaraan = function (req, res)  {
         
