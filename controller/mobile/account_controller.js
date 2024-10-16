@@ -20,7 +20,7 @@ exports.getWisata = function (req, res) {
 
 
     exports.getkendaraan = function (req, res)  {
-        
+
           const sql = 'SELECT * FROM kendaraan';
           db.query(sql, (err, result) => {
             if (err) {
@@ -35,7 +35,7 @@ exports.getWisata = function (req, res) {
 
 exports.getHotel = function (req, res)  {
   const {id} = req.params;
-  
+
     const sql = 'SELECT * FROM hotel WHERE id_hotel = ?';
     db.query(sql, [id], (err, result) => {
         if (err) {
@@ -47,16 +47,16 @@ exports.getHotel = function (req, res)  {
           }
         });
       };
-  
+
      exports.getPaketwisata = (req, res) => {
         const sql= `
-        SELECT * FROM paket_wisata pw 
-        INNER JOIN wisata w ON pw.id_wisata = w.id_wisata 
+        SELECT * FROM paket_wisata pw
+        INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
         INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
         INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
         INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
         `;
-    
+
         db.query(sql, (err, results) => {
             if (err) {
                 console.error('Error executing query:', err);
@@ -65,24 +65,24 @@ exports.getHotel = function (req, res)  {
             res.status(200).json(results);
            });
     };
- 
-    
+
+
 
     exports.datadiri = async (req, res) => {
         const id_user = req.user.id_user; // Ambil ID user dari objek req.user yang diset oleh middleware
-        
+
         const sql = 'SELECT nama, no_hp, email, username FROM user WHERE id_user = ?';
-    
+
         db.query(sql, [id_user], (err, results) => {
             if (err) {
                 console.error('Error executing query:', err);
                 return res.status(500).send('Error retrieving user details');
             }
-    
+
             if (results.length === 0) {
                 return res.status(404).send('User not found');
             }
-    
+
             res.status(200).json(results[0]);
         });
     };
@@ -96,7 +96,7 @@ exports.getHotel = function (req, res)  {
               console.log(err);
               return res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
           }
-          
+
           let tipeKendaraan = req.body.tipe_kendaraan;
           let noKendaraan = req.body.no_kendaraan;
           let jumlahSeat = req.body.jumlah_seat;
@@ -105,8 +105,8 @@ exports.getHotel = function (req, res)  {
           let lokasiPenjemputan = req.body.lokasi_penjemputan;
           let waktuPenjemputan = req.body.waktu_penjemputan;
           let picture = req.file.path ? req.file.filename : null;
-        
-      
+
+
           connection.query(`INSERT INTO kendaraan(tipe_kendaraan, no_kendaraan, jumlah_seat, nama_kendaraan,gambar_kendaraan,harga_sewa,lokasi_penjemputan,waktu_penjemputan)
                           VALUES(?,?,?,?,?,?,?,?)`, [tipeKendaraan, noKendaraan, jumlahSeat,namaKendaraan, picture,hargaSewa,lokasiPenjemputan,waktuPenjemputan],
               function (error, rows, fields) {
@@ -135,20 +135,20 @@ exports.getHotel = function (req, res)  {
 
     exports.addPesananKendaraan = async (req, res) => {
         const { id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan } = req.body;
-    
+
         try {
             const [pesananExists, kendaraanExists] = await Promise.all([
                 checkIdExists('pesanan', 'id_pesanan', id_pesanan),
                 checkIdExists('kendaraan', 'id_kendaraan', id_kendaraan)
             ]);
-    
+
             if (!pesananExists) {
                 return res.status(400).send('Invalid id_pesanan');
             }
             if (!kendaraanExists) {
                 return res.status(400).send('Invalid id_kendaraan');
             }
-    
+
             const sql = 'INSERT INTO pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan) VALUES (?, ?, ?, ?, ?, ?, ?)';
             db.query(sql, [id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan], (err, result) => {
                 if (err) {
@@ -163,29 +163,29 @@ exports.getHotel = function (req, res)  {
             res.status(500).send('Error checking IDs');
         }
     };
-    
+
     exports.addDetailPesananKendaraan = async (req, res) => {
         const { id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan } = req.body;
         const userId = req.user.id; // Ambil ID user dari objek req.user yang diset oleh middleware
-    
+
         // Query untuk mendapatkan id_pesanan berdasarkan user_id
         const getPesananSql = 'SELECT id_pesanan FROM pesanan WHERE id_user = ? ORDER BY tgl_pesanan DESC LIMIT 1';
-    
+
         db.query(getPesananSql, [userId], (err, results) => {
             if (err) {
                 console.error('Error executing query:', err);
                 return res.status(500).send('Error retrieving pesanan');
             }
-    
+
             if (results.length === 0) {
                 return res.status(404).send('No pesanan found for this user');
             }
-    
+
             const id_pesanan = results[0].id_pesanan;
-    
+
             // Buat query untuk memasukkan data ke tabel detail_pesanan_kendaraan
             const insertDetailPesananKendaraanSql = 'INSERT INTO detail_pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    
+
             db.query(insertDetailPesananKendaraanSql, [id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan], (err, result) => {
                 if (err) {
                     console.error('Error executing query:', err);
@@ -196,6 +196,8 @@ exports.getHotel = function (req, res)  {
         });
     };
     exports.viewPesanan = async (req, res) => {
+        const {id_user} = req.user; // Ambil ID user dari objek req.user yang diset oleh middleware
+
         const sql = `
             SELECT * FROM pesanan p
             INNER JOIN detail_pesanan dp ON p.id_pesanan = dp.id_pesanan
@@ -204,36 +206,38 @@ exports.getHotel = function (req, res)  {
             INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
             INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
             INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
+            INNER JOIN user u ON p.id_user = u.id_user
+            WHERE p.id_user = ?
+            AND p.tgl_pesanan > NOW()
         `;
-        const userId = req.user.id;
-    
-        db.query(sql, (err, results) => {
+
+        db.query(sql, [id_user], (err, results) => {
             if (err) {
                 console.error('Error executing query:', err);
                 return res.status(500).json({ success: false, message: 'Error retrieving data' });
             }
-    
+
             res.status(200).json({ success: true, data: results });
         });
     };
-    
+
 
     // exports.addPesanankendaraan  = async (req, res) => {
     //     const { id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan } = req.body;
-    
+
     //     try {
     //         const [pesananExists, kendaraanExists] = await Promise.all([
     //             checkIdExists('pesanan', 'id_pesanan', id_pesanan),
     //             checkIdExists('kendaraan', 'id_kendaraan', id_kendaraan)
     //         ]);
-    
+
     //         if (!pesananExists) {
     //             return res.status(400).send('Invalid id_pesanan');
     //         }
     //         if (!kendaraanExists) {
     //             return res.status(400).send('Invalid id_kendaraan');
     //         }
-    
+
     //         const sql = 'INSERT INTO pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan) VALUES (?, ?, ?, ?, ?, ?, ?)';
     //         db.query(sql, [id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan], (err, result) => {
     //             if (err) {
@@ -249,30 +253,30 @@ exports.getHotel = function (req, res)  {
     //     }
     // };
 
-    
+
 
     // exports.addDetailPesananKendaraan = async (req, res) => {
     //     const { id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan } = req.body;
     //     const userId = req.user.id; // Ambil ID user dari objek req.user yang diset oleh middleware
-    
+
     //     // Query untuk mendapatkan id_pesanan berdasarkan user_id
     //     const getPesananSql = 'SELECT id_pesanan FROM pesanan WHERE id_user = ? ORDER BY tgl_pesanan DESC LIMIT 1';
-    
+
     //     db.query(getPesananSql, [userId], (err, results) => {
     //         if (err) {
     //             console.error('Error executing query:', err);
     //             return res.status(500).send('Error retrieving pesanan');
     //         }
-    
+
     //         if (results.length === 0) {
     //             return res.status(404).send('No pesanan found for this user');
     //         }
-    
+
     //         const id_pesanan = results[0].id_pesanan;
-    
+
     //         // Buat query untuk memasukkan data ke tabel detail_pesanan_kendaraan
     //         const insertDetailPesananKendaraanSql = 'INSERT INTO detail_pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    
+
     //         db.query(insertDetailPesananKendaraanSql, [id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan], (err, result) => {
     //             if (err) {
     //                 console.error('Error executing query:', err);
@@ -282,29 +286,29 @@ exports.getHotel = function (req, res)  {
     //         });
     //     });
     // };
-    
+
     exports.addDetailPesanan = async (req, res) => {
         const { id_paket_wisata, qty, harga, sub_total } = req.body;
         const userId = req.user.id; // Ambil ID user dari objek req.user yang diset oleh middleware
-    
+
         // Query untuk mendapatkan id_pesanan berdasarkan user_id
         const getPesananSql = 'SELECT id_pesanan FROM pesanan WHERE id_user = ? ORDER BY tgl_pesanan DESC LIMIT 1';
-    
+
         db.query(getPesananSql, [userId], (err, results) => {
             if (err) {
                 console.error('Error executing query:', err);
                 return res.status(500).send('Error retrieving pesanan');
             }
-    
+
             if (results.length === 0) {
                 return res.status(404).send('No pesanan found for this user');
             }
-    
+
             const id_pesanan = results[0].id_pesanan;
-    
+
             // Buat query untuk memasukkan data ke tabel detail_pesanan
             const insertDetailPesananSql = 'INSERT INTO detail_pesanan (id_paket_wisata, qty, harga, sub_total, id_pesanan) VALUES (?, ?, ?, ?, ?)';
-    
+
             db.query(insertDetailPesananSql, [id_paket_wisata, qty, harga, sub_total, id_pesanan], (err, result) => {
                 if (err) {
                     console.error('Error executing query:', err);
@@ -490,4 +494,4 @@ exports.createPesananWithDetailsKendaraan = async(req, res) => {
             });
         });
     });
-};   
+};

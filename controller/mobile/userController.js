@@ -126,7 +126,6 @@ exports.getImageWisata = (req, res) => {
     try {
         const { name } = req.params;
         const filePath = path.join(__dirname, `../../images_wisata/${name}`);
-        console.log(__dirname);
         res.sendFile(filePath);
     } catch (error) {
         console.log(error)
