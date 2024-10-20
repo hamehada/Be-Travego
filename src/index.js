@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -18,9 +19,11 @@ routesUser(app);
 var routesAdmin = require("../routes/admin");
 routesAdmin(app);
 
-app.use(express.static(__dirname.replace('/src', '') + '/images_wisata'));
-app.use(express.static(__dirname.replace('/src', '') + '/images/transport'));
 
-app.listen(3000, () => {
-    console.log('wooop');
+app.use('/images/wisata', express.static(path.join(__dirname, '../images/wisata')));
+app.use('/images/transport', express.static(path.join(__dirname, '../images/transport')));
+app.use('/images/hotel', express.static(path.join(__dirname, '../images/hotel')));
+
+app.listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}`);
 });
