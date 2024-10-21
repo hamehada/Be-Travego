@@ -9,6 +9,7 @@ module.exports = function (app) {
     app.route(`/api/admin/check`)
         .get(adminControll.auth_controller.check);
 
+
     // FUNGSI CRUD HOTEL
     app.route(`/api/admin/getHotel`)
         .get(adminControll.hotel_controller.getHotels);
@@ -22,6 +23,9 @@ module.exports = function (app) {
     app.route(`/api/admin/editHotel/:id`)
         .put(adminControll.hotel_controller.editHotel);
 
+    app.route(`/api/admin/deleteHotel/:id`)
+        .delete(adminControll.hotel_controller.deleteHotel);
+
 
     // FUNGSI CRUD PAKET WISATA
     app.route(`/api/admin/getPaketwisata`)
@@ -30,8 +34,15 @@ module.exports = function (app) {
     app.route(`/api/admin/getPaketwisata/:id`)
         .get(adminControll.wisata_controller.getPaketWisata);
 
+    app.route(`/api/admin/editPaketwisata/:id`)
+        .put(adminControll.wisata_controller.editPaketwisata);
+
+    app.route(`/api/admin/deletePaketwisata/:id`)
+        .delete(adminControll.wisata_controller.deletePaketWisata);
+
     app.route(`/api/admin/addPaketwisata`)
         .post(adminControll.wisata_controller.addPaketwisata);
+
 
     // FUNGSI CRUD WISATA
     app.route(`/api/admin/addWisata`)
@@ -39,6 +50,12 @@ module.exports = function (app) {
 
     app.route(`/api/admin/getWisata/:id`)
         .get(adminControll.wisata_controller.getWisata);
+
+    app.route(`/api/admin/editWisata/:id`)
+        .put(adminControll.wisata_controller.editWisata);
+
+    app.route(`/api/admin/deleteWisatas/:id`)
+        .delete(adminControll.wisata_controller.deleteWisata);
 
     app.route(`/api/admin/getWisata`)
         .get(adminControll.wisata_controller.getWisatas);
@@ -51,11 +68,32 @@ module.exports = function (app) {
     app.route(`/api/admin/getKendaraan/:id`)
         .get(adminControll.transport_controller.getkendaraan);
 
+    app.route(`/api/admin/deleteKendaraan/:id`)
+        .delete(adminControll.transport_controller.deleteKendaraan);
+
     app.route(`/api/admin/getKendaraan`)
         .get(adminControll.transport_controller.getkendaraans);
 
     app.route(`/api/admin/editKendaraan/:id`)
         .put(adminControll.transport_controller.editKendaraan);
+
+
+    // FUNGSI CRUD RUMAHMAKAN
+    app.route(`/api/admin/addRumahMakan`)
+        .post(adminControll.rm_controller.addRm);
+
+    app.route(`/api/admin/getRumahMakan/:id`)
+        .get(adminControll.rm_controller.getRm);
+
+    app.route(`/api/admin/deleteRumahMakan/:id`)
+        .delete(adminControll.rm_controller.deleteRm);
+
+    app.route(`/api/admin/getRumahMakan`)
+        .get(adminControll.rm_controller.getRms);
+
+    app.route(`/api/admin/editRumahMakan/:id`)
+        .put(adminControll.rm_controller.editRm);
+
 
 
     // TRANSAKSI

@@ -47,6 +47,22 @@ exports.getkendaraan = function (req, res) {
   });
 };
 
+exports.deleteKendaraan = function (req, res) {
+  const { id } = req.params;
+  const sql = 'DELETE FROM kendaraan WHERE id_kendaraan = ?';
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      console.log(err);
+      res.send(err);
+    } else {
+      if (result.affectedRows === 0) {
+        return res.status(404).send({ success: false, message: 'Kendaraan not found.' });
+      }
+      res.send({ success: true, message: 'Kendaraan deleted successfully.' });
+    }
+  });
+};
+
 exports.getkendaraans = function (req, res) {
   const sql = 'SELECT * FROM kendaraan ORDER BY id_kendaraan DESC';
   db.query(sql, (err, result) => {

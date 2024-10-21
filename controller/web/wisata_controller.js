@@ -45,7 +45,7 @@ const checkIdExists = (table, column, id) => {
 
 exports.addPaketwisata = async (req, res) => {
     const { nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata } = req.body;
-
+console.log( { nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata } )
     try {
         const [rmExists, hotelExists, kendaraanExists, wisataExists] = await Promise.all([
             checkIdExists('rumahmakan', 'id_rm', id_rm),
@@ -54,6 +54,50 @@ exports.addPaketwisata = async (req, res) => {
             checkIdExists('wisata', 'id_wisata', id_wisata)
         ]);
 
+        if (!rmExists) {
+            return res.status(400).send({ success: false, message: 'ID Rumah Makan tidak valid' });
+        }
+        if (!hotelExists) {
+            return res.status(400).send({ success: false, message: 'ID Hotel tidak valid' });
+        }
+        if (!kendaraanExists) {
+            return res.status(400).send({ success: false, message: 'ID Kendaraan tidak valid' });
+        }
+        if (!wisataExists) {
+            return res.status(400).send({ success: false, message: 'ID Wisata tidak valid' });
+        }
+
+        const sql = 'INSERT INTO paket_wisata (nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        db.query(sql, [nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata], (err, result) => {
+            if (err) {
+                console.error('Error executing query:', err);
+                return res.status(500).send('Error adding paket_wisata');                
+            }
+            return res.status(200).send({ success: true, message: 'Paket wisata berhasil ditambahkan' });
+        });
+    } catch (err) {
+        console.error('Error checking IDs:', err);
+        res.status(500).send('Error checking IDs');
+    }
+};
+
+
+exports.editPaketwisata = async (req, res) => {
+    const { id } = req.params;
+    const { nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata } = req.body;
+
+    try {
+        const [paketExists, rmExists, hotelExists, kendaraanExists, wisataExists] = await Promise.all([
+            checkIdExists('paket_wisata', 'id_paket', id),
+            checkIdExists('rumahmakan', 'id_rm', id_rm),
+            checkIdExists('hotel', 'id_hotel', id_hotel),
+            checkIdExists('kendaraan', 'id_kendaraan', id_kendaraan),
+            checkIdExists('wisata', 'id_wisata', id_wisata)
+        ]);
+
+        if (!paketExists) {
+            return res.send({ success: false, message: 'ID Paket tidak valid' });
+        }
         if (!rmExists) {
             return res.send({ success: false, message: 'ID Rumah Makan tidak valid' });
         }
@@ -67,14 +111,14 @@ exports.addPaketwisata = async (req, res) => {
             return res.send({ success: false, message: 'ID Wisata tidak valid' });
         }
 
-        const sql = 'INSERT INTO paket_wisata (nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        db.query(sql, [nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata], (err, result) => {
+        const sql = 'UPDATE paket_wisata SET nama_paket = ?, deskripsi = ?, id_rm = ?, id_hotel = ?, id_kendaraan = ?, harga = ?, id_wisata = ? WHERE id_paket = ?';
+        db.query(sql, [nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata, id], (err, result) => {
             if (err) {
                 console.error('Error executing query:', err);
-                res.status(500).send('Error adding paket_wisata');
+                res.status(500).send('Error updating paket_wisata');
                 return;
             }
-            res.status(200).send({ success: true, message: 'Paket wisata berhasil ditambahkan' });
+            res.status(200).send({ success: true, message: 'Paket wisata berhasil diupdate' });
         });
     } catch (err) {
         console.error('Error checking IDs:', err);
@@ -112,6 +156,39 @@ exports.addWisata = function (req, res) {
     });
 };
 
+
+exports.editWisata = function (req, res) {
+    upload(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+            console.log(err);
+            return res.status(500).json({ success: false, message: 'Failed to upload image.' });
+        } else if (err) {
+            console.log(err);
+            return res.status(500).json({ success: false, message: 'An unexpected error occurred.' });
+        }
+
+        const id = req.params.id;
+        let namaWisata = req.body.nama_wisata;
+        let Lokasi = req.body.lokasi;
+        let hargaTiket = req.body.harga_tiket;
+        let picture = req.file ? req.file.filename : null;
+
+        const sql = picture ?
+            'UPDATE wisata SET nama_wisata = ?, lokasi = ?, harga_tiket = ?, gambar_wisata = ? WHERE id_wisata = ?' :
+            'UPDATE wisata SET nama_wisata = ?, lokasi = ?, harga_tiket = ? WHERE id_wisata = ?';
+        const params = picture ? [namaWisata, Lokasi, hargaTiket, picture, id] : [namaWisata, Lokasi, hargaTiket, id];
+
+        db.query(sql, params, (err, result) => {
+            if (err) {
+                console.error('Error executing query:', err);
+                res.status(500).send('Error updating wisata');
+                return;
+            }
+            res.status(200).send({ success: true, message: 'Wisata berhasil diupdate' });
+        });
+    });
+};
+
 exports.getWisata = function (req, res) {
     const { id } = req.params;
     const sql = 'SELECT * FROM wisata WHERE id_wisata = ?'
@@ -129,6 +206,20 @@ exports.getWisata = function (req, res) {
     });
 };
 
+exports.deleteWisata = function (req, res) {
+    const { id } = req.params;
+    const sql = 'DELETE FROM wisata WHERE id_wisata = ?'
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.log(err);
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).send({ success: false, message: 'Wisata not found.' });
+        }
+        res.send({ success: true, message: 'Wisata deleted successfully.' });
+    });
+}
+
 exports.getWisatas = function (req, res) {
     const sql = 'SELECT * FROM wisata ORDER BY id_wisata DESC'
     db.query(sql, (err, result) => {
@@ -143,59 +234,10 @@ exports.getWisatas = function (req, res) {
 };
 
 
-
-exports.getPaketWisatas = function (req, res) {
-    const sql = `
-        SELECT pw.*, w.nama_wisata, w.gambar_wisata, rm.nama_rm, h.nama_hotel, k.nama_kendaraan
-        FROM paket_wisata pw
-        INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
-        INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
-        INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
-        INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
-        ORDER BY pw.id_paket DESC
-    `;
-    db.query(sql, (err, result) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).json({ success: false, message: 'Terjadi kesalahan saat mengambil data paket wisata.' });
-        }
-        const data = result.map(r => ({
-            id_paket: r.id_paket,
-            nama_paket: r.nama_paket,
-            deskripsi: r.deskripsi,
-            harga: r.harga,
-            id_wisata: r.id_wisata,
-            id_rm: r.id_rm,
-            id_hotel: r.id_hotel,
-            id_kendaraan: r.id_kendaraan,
-            gambar_paket: r.gambar_paket ? `${BASE_URL}/images/wisata/${r.gambar_paket}` : null,
-            wisata: {
-                id_wisata: r.id_wisata,
-                nama_wisata: r.nama_wisata,
-                gambar_wisata: r.gambar_wisata ? `${BASE_URL}/images/wisata/${r.gambar_wisata}` : null
-            },
-            rumahmakan: {
-                id_rm: r.id_rm,
-                nama_rm: r.nama_rm
-            },
-            hotel: {
-                id_hotel: r.id_hotel,
-                nama_hotel: r.nama_hotel
-            },
-            kendaraan: {
-                id_kendaraan: r.id_kendaraan,
-                nama_kendaraan: r.nama_kendaraan
-            }
-        }));
-        return res.send(data);
-    });
-};
-
-
 exports.getPaketWisata = function (req, res) {
     const { id } = req.params;
     const sql = `
-        SELECT pw.*, w.nama_wisata, w.gambar_wisata, rm.nama_rm, h.nama_hotel, k.nama_kendaraan
+        SELECT pw.*, w.nama_wisata, w.gambar_wisata, rm.nama_rm, h.nama_hotel, h.gambar_hotel, k.nama_kendaraan, k.gambar_kendaraan
         FROM paket_wisata pw
         INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
         INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
@@ -228,18 +270,83 @@ exports.getPaketWisata = function (req, res) {
             },
             rumahmakan: {
                 id_rm: r.id_rm,
-                nama_rm: r.nama_rm
+                nama_rm: r.nama_rm,                
             },
             hotel: {
                 id_hotel: r.id_hotel,
-                nama_hotel: r.nama_hotel
+                nama_hotel: r.nama_hotel,
+                gambar_hotel: r.gambar_hotel ? `${BASE_URL}/images/hotel/${r.gambar_hotel}` : null
             },
             kendaraan: {
                 id_kendaraan: r.id_kendaraan,
-                nama_kendaraan: r.nama_kendaraan
+                nama_kendaraan: r.nama_kendaraan,
+                gambar_kendaraan: r.gambar_kendaraan ? `${BASE_URL}/images/kendaraan/${r.gambar_kendaraan}` : null
             }
         }));
         return res.send(data[0]);
     });
 };
 
+
+exports.getPaketWisatas = function (req, res) {
+    const sql = `
+        SELECT pw.*, w.nama_wisata, w.gambar_wisata, rm.nama_rm, h.nama_hotel, h.gambar_hotel, k.nama_kendaraan, k.gambar_kendaraan
+        FROM paket_wisata pw
+        INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
+        INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
+        INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
+        INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
+        ORDER BY pw.id_paket DESC        
+    `;
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ success: false, message: 'Terjadi kesalahan saat mengambil data paket wisata.' });
+        }
+        const data = result.map(r => ({
+            id_paket: r.id_paket,
+            nama_paket: r.nama_paket,
+            deskripsi: r.deskripsi,
+            harga: r.harga,
+            id_wisata: r.id_wisata,
+            id_rm: r.id_rm,
+            id_hotel: r.id_hotel,
+            id_kendaraan: r.id_kendaraan,
+            gambar_paket: r.gambar_paket ? `${BASE_URL}/images/wisata/${r.gambar_paket}` : null,
+            wisata: {
+                id_wisata: r.id_wisata,
+                nama_wisata: r.nama_wisata,
+                gambar_wisata: r.gambar_wisata ? `${BASE_URL}/images/wisata/${r.gambar_wisata}` : null
+            },
+            rumahmakan: {
+                id_rm: r.id_rm,
+                nama_rm: r.nama_rm,
+            },
+            hotel: {
+                id_hotel: r.id_hotel,
+                nama_hotel: r.nama_hotel,
+                gambar_hotel: r.gambar_hotel ? `${BASE_URL}/images/hotel/${r.gambar_hotel}` : null
+            },
+            kendaraan: {
+                id_kendaraan: r.id_kendaraan,
+                nama_kendaraan: r.nama_kendaraan,
+                gambar_kendaraan: r.gambar_kendaraan ? `${BASE_URL}/images/kendaraan/${r.gambar_kendaraan}` : null
+            }
+        }));
+        return res.send(data);
+    });
+};
+
+
+
+exports.deletePaketWisata = function (req, res) {
+    const { id } = req.params;
+    const sql = 'DELETE FROM paket_wisata WHERE id_paket = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ success: false, message: 'Terjadi kesalahan saat menghapus data paket wisata.' });
+        }
+        return res.json({ success: true, message: 'Data paket wisata berhasil dihapus.' });
+    });
+};

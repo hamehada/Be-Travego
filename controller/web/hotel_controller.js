@@ -58,6 +58,21 @@ exports.getHotel = function (req, res) {
         return res.send(result[0]);
     });
 };
+
+exports.deleteHotel = function (req, res) {
+    const { id } = req.params;
+    const sql = 'DELETE FROM hotel WHERE id_hotel = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.log(err);
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Hotel tidak ditemukan.' });
+        }
+        return res.send({ success: true, message: 'Hotel berhasil dihapus.' });
+    });
+}
+
 exports.addHotel = function (req, res) {
     upload(req, res, function (err) {
         if (err instanceof multer.MulterError) {
