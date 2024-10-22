@@ -10,21 +10,21 @@ module.exports = function (app) {
         .get(adminControll.auth_controller.check);
 
 
-    // FUNGSI CRUD HOTEL
-    app.route(`/api/admin/getHotel`)
-        .get(adminControll.hotel_controller.getHotels);
+    // // FUNGSI CRUD HOTEL
+    // app.route(`/api/admin/getHotel`)
+    //     .get(adminControll.hotel_controller.getHotels);
 
-    app.route(`/api/admin/getHotel/:id`)
-        .get(adminControll.hotel_controller.getHotel);
+    // app.route(`/api/admin/getHotel/:id`)
+    //     .get(adminControll.hotel_controller.getHotel);
 
-    app.route(`/api/admin/addHotel/`)
-        .post(adminControll.hotel_controller.addHotel);
+    // app.route(`/api/admin/addHotel/`)
+    //     .post(adminControll.hotel_controller.addHotel);
 
-    app.route(`/api/admin/editHotel/:id`)
-        .put(adminControll.hotel_controller.editHotel);
+    // app.route(`/api/admin/editHotel/:id`)
+    //     .put(adminControll.hotel_controller.editHotel);
 
-    app.route(`/api/admin/deleteHotel/:id`)
-        .delete(adminControll.hotel_controller.deleteHotel);
+    // app.route(`/api/admin/deleteHotel/:id`)
+    //     .delete(adminControll.hotel_controller.deleteHotel);
 
 
     // FUNGSI CRUD PAKET WISATA

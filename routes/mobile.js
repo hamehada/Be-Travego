@@ -24,8 +24,8 @@ module.exports = function (app) {
     app.route(`/api/user/getkendaraan/`)
     .get(mobileUser.account_controller.getkendaraan)
 
-    app.route(`/api/user/getHotel/:id`)
-    .get(mobileUser.account_controller.getHotel)
+    // app.route(`/api/user/getHotel/:id`)
+    // .get(mobileUser.account_controller.getHotel)
 
     app.route(`/api/user/getPaketwisata/`)
     .get(mobileUser.account_controller.getPaketwisata)
@@ -45,11 +45,25 @@ module.exports = function (app) {
     app.route(`/api/user/viewPesanan/`)
     .get(authenticateToken,mobileUser.account_controller.viewPesanan)
 
-    // app.route(`/api/user/addPesanankendaraan/`)
-    // .post(authenticateToken,mobileUser.account_controller.addPesananKendaraan)
+    app.route(`/api/user/addPesanankendaraan/`)
+    .post(authenticateToken,mobileUser.account_controller.addPesananKendaraan)
 
+    //Resrvasi Kendaraan
+    app.route(`/api/user/addDetailPesananKendaraan/`)
+    .post(authenticateToken,mobileUser.account_controller.addDetailPesananKendaraan)
 
-    // app.route(`/api/user/addDetailPesananKendaraan/`)
-    // .post(authenticateToken,mobileUser.account_controller.addDetailPesananKendaraan)
+    app.route(`/api/user/addReservasiKendaraan/`)
+    .post(authenticateToken,mobileUser.account_controller.addReservasiKendaraan)
+
+    app.route(`/api/user/getReservasiKendaraan/`)
+    .get(authenticateToken,mobileUser.account_controller.getReservasiKendaraan)    
+
+    app.route(`/api/user/addReservasiRm/`)
+    .post(authenticateToken,mobileUser.account_controller.addReservasiRm)
+
+    app.route(`/api/user/getReservasiRm/`)
+    .get(authenticateToken,mobileUser.account_controller.getReservasiRm)
+
+    
 }
 

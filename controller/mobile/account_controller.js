@@ -222,36 +222,36 @@ exports.getHotel = function (req, res)  {
     };
 
 
-    // exports.addPesanankendaraan  = async (req, res) => {
-    //     const { id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan } = req.body;
+    exports.addPesanankendaraan  = async (req, res) => {
+        const { id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan } = req.body;
 
-    //     try {
-    //         const [pesananExists, kendaraanExists] = await Promise.all([
-    //             checkIdExists('pesanan', 'id_pesanan', id_pesanan),
-    //             checkIdExists('kendaraan', 'id_kendaraan', id_kendaraan)
-    //         ]);
+        try {
+            const [pesananExists, kendaraanExists] = await Promise.all([
+                checkIdExists('pesanan', 'id_pesanan', id_pesanan),
+                checkIdExists('kendaraan', 'id_kendaraan', id_kendaraan)
+            ]);
 
-    //         if (!pesananExists) {
-    //             return res.status(400).send('Invalid id_pesanan');
-    //         }
-    //         if (!kendaraanExists) {
-    //             return res.status(400).send('Invalid id_kendaraan');
-    //         }
+            if (!pesananExists) {
+                return res.status(400).send('Invalid id_pesanan');
+            }
+            if (!kendaraanExists) {
+                return res.status(400).send('Invalid id_kendaraan');
+            }
 
-    //         const sql = 'INSERT INTO pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    //         db.query(sql, [id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan], (err, result) => {
-    //             if (err) {
-    //                 console.error('Error executing query:', err);
-    //                 res.status(500).send('Error adding pesanan_kendaraan');
-    //                 return;
-    //             }
-    //             res.status(200).send('Pesanan_kendaraan added successfully');
-    //         });
-    //     } catch (err) {
-    //         console.error('Error checking IDs:', err);
-    //         res.status(500).send('Error checking IDs');
-    //     }
-    // };
+            const sql = 'INSERT INTO pesanan_kendaraan (id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan) VALUES (?, ?, ?, ?, ?, ?, ?)';
+            db.query(sql, [id_pesanan, id_kendaraan, qty, harga, subtotal, lokasi_penjemputan, waktu_penjemputan], (err, result) => {
+                if (err) {
+                    console.error('Error executing query:', err);
+                    res.status(500).send('Error adding pesanan_kendaraan');
+                    return;
+                }
+                res.status(200).send('Pesanan_kendaraan added successfully');
+            });
+        } catch (err) {
+            console.error('Error checking IDs:', err);
+            res.status(500).send('Error checking IDs');
+        }
+    };
 
 
 
@@ -319,7 +319,7 @@ exports.getHotel = function (req, res)  {
         });
     };
 
-    exports.createPesananWithDetails = async (req, res) => {
+exports.createPesananWithDetails = async (req, res) => {
         const {
     tgl_pesanan,
     catatan,
@@ -495,3 +495,120 @@ exports.createPesananWithDetailsKendaraan = async(req, res) => {
         });
     });
 };
+
+exports.addReservasiRm = async (req, res) => {
+    const { id_rm, waktu_reservasi, jumlah_pax } = req.body;
+    const id_user = req.user.id_user; // Corrected to use id_user
+
+    console.log('req.user:', req.user); // Debugging, should log { id_user: 20, ... }
+    console.log('id_user:', id_user);   // Should now correctly log 20
+
+    if (!id_user) {
+        return res.status(400).send('User not authenticated or id_user is null');
+    }
+
+    try {
+        // Check if id_rm exists in the rumahmakan table
+        const rmExists = await checkIdExists('rumahmakan', 'id_rm', id_rm);
+
+        if (!rmExists) {
+            return res.status(400).send('Invalid id_rm');  
+        }
+
+        const sql = 'INSERT INTO reservasi_rm (id_rm, id_user, waktu_reservasi, jumlah_pax, created_at) VALUES (?, ?, ?, ?, NOW())';
+        db.query(sql, [id_rm, id_user, waktu_reservasi, jumlah_pax], (err, result) => {
+            if (err) {
+                console.error('Error executing query:', err);
+                res.status(500).send('Error adding reservasi_rm');
+                return;
+            }
+            res.status(200).send('Reservasi RM added successfully');
+        });
+    } catch (err) {
+        console.error('Error checking ID:', err);
+        res.status(500).send('Error checking ID');
+    }
+};
+
+exports.getReservasiRm = async (req, res) => {
+    const id_user = req.user.id_user;
+    const sql = 'SELECT * FROM reservasi_rm WHERE id_user = ? ORDER BY created_at DESC';
+
+    try {
+        db.query(sql,[id_user], (err, result) => {
+            if (err) {
+                console.error('Error executing query:', err);
+                res.status(500).send('Error retrieving reservasi_rm');
+                return;
+            }
+            if (result.length === 0) {
+                return res.status(404).send('Reservasi RM not found');
+            }
+
+            res.status(200).json(result);
+        });
+    } catch (err) {
+        console.error('Error executing query:', err);
+        res.status(500).send('Error retrieving reservasi_rm');
+    }
+};
+
+
+exports.addReservasiKendaraan = async (req, res) => {
+    const { id_kendaraan, waktu_pemesanan, total, lokasi } = req.body;
+    const id_user = req.user.id_user; // User ID from the logged-in user's session or token
+
+
+    if (!id_user) {
+        return res.status(400).send('User not authenticated or id_user is null');
+    }
+
+    try {
+        // Check if id_kendaraan exists in the kendaraan table
+        const kendaraanExists = await checkIdExists('kendaraan', 'id_kendaraan', id_kendaraan);
+
+        if (!kendaraanExists) {
+            return res.status(400).send('Invalid id_kendaraan');  
+        }
+
+        const sql = 'INSERT INTO reservasi_kendaraan (id_kendaraan, waktu_pemesanan, total, id_user, lokasi, created_at) VALUES (?, ?, ?, ?, ?, NOW())';
+        db.query(sql, [id_kendaraan, waktu_pemesanan, total, id_user, lokasi], (err, result) => {
+            if (err) {
+                console.error('Error executing query:', err);
+                res.status(500).send('Error adding reservasi_kendaraan');
+                return;
+            }
+            res.status(200).send('Reservasi kendaraan added successfully');
+        });
+    } catch (err) {
+        console.error('Error checking ID:', err);
+        res.status(500).send('Error checking ID');
+    }
+};
+
+exports.getReservasiKendaraan = async (req, res) => {
+    const id_user = req.user.id_user;
+
+    const sql = 'SELECT * FROM reservasi_kendaraan WHERE id_user = ?';
+
+    try {
+    db.query(sql, [id_user], (err, results) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            res.status(500).send('Error retrieving reservasi_kendaraan');
+            return;
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('Reservasi kendaraan not found');
+        }
+
+        res.status(200).json(results);
+    });
+    } catch (err) {
+        console.error('Error retrieving reservasi_kendaraan:', err);
+        res.status(500).send('Error retrieving reservasi_kendaraan');
+    }
+
+};
+
