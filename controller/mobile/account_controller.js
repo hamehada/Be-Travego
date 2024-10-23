@@ -612,3 +612,36 @@ exports.getReservasiKendaraan = async (req, res) => {
 
 };
 
+//FILTER WISATA
+exports.getWisataByLocation = async (req, res) => {
+    const { lokasi } = req.query; // Lokasi yang digunakan sebagai filter diambil dari query parameters
+
+    // SQL query dasar
+    let sql = 'SELECT id_wisata, nama_wisata, lokasi, harga_tiket, gambar_wisata FROM wisata';
+
+    // Jika lokasi disediakan, tambahkan kondisi WHERE untuk memfilter berdasarkan lokasi
+    if (lokasi) {
+        sql += ' WHERE lokasi LIKE ?';
+    }
+
+    try {
+        // Eksekusi query dengan atau tanpa filter lokasi
+        db.query(sql, lokasi ? [`%${lokasi}%`] : [], (err, results) => {
+            if (err) {
+                console.error('Error fetching wisata:', err);
+                res.status(500).send('Error fetching wisata');
+                return;
+            }
+
+            if (results.length === 0) {
+                return res.status(404).send('No wisata found for the given location');
+            }
+
+            res.status(200).json(results); // Mengembalikan hasil wisata sebagai JSON
+        });
+    } catch (err) {
+        console.error('Error executing query:', err);
+        res.status(500).send('Error executing query');
+    }
+};
+

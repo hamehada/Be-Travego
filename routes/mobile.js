@@ -64,6 +64,8 @@ module.exports = function (app) {
     app.route(`/api/user/getReservasiRm/`)
     .get(authenticateToken,mobileUser.account_controller.getReservasiRm)
 
+    app.route(`/api/user/getWisataByLocation/`)
+    .get(authenticateToken,mobileUser.account_controller.getWisataByLocation)
     
 }
 
