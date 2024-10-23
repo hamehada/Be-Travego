@@ -54,7 +54,7 @@ module.exports = function (app) {
     app.route(`/api/admin/editWisata/:id`)
         .put(adminControll.wisata_controller.editWisata);
 
-    app.route(`/api/admin/deleteWisatas/:id`)
+    app.route(`/api/admin/deleteWisata/:id`)
         .delete(adminControll.wisata_controller.deleteWisata);
 
     app.route(`/api/admin/getWisata`)
