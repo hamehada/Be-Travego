@@ -52,9 +52,6 @@ exports.getHotel = function (req, res)  {
         const sql= `
         SELECT * FROM paket_wisata pw
         INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
-        INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
-        INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
-        INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
         `;
 
         db.query(sql, (err, results) => {
@@ -203,9 +200,6 @@ exports.getHotel = function (req, res)  {
             INNER JOIN detail_pesanan dp ON p.id_pesanan = dp.id_pesanan
             INNER JOIN paket_wisata pw ON dp.id_paket_wisata = pw.id_paket
             INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
-            INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
-            INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
-            INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
             INNER JOIN user u ON p.id_user = u.id_user
             WHERE p.id_user = ?
             AND p.tgl_pesanan > NOW()
@@ -512,7 +506,7 @@ exports.addReservasiRm = async (req, res) => {
         const rmExists = await checkIdExists('rumahmakan', 'id_rm', id_rm);
 
         if (!rmExists) {
-            return res.status(400).send('Invalid id_rm');  
+            return res.status(400).send('Invalid id_rm');
         }
 
         const sql = 'INSERT INTO reservasi_rm (id_rm, id_user, waktu_reservasi, jumlah_pax, created_at) VALUES (?, ?, ?, ?, NOW())';
@@ -568,7 +562,7 @@ exports.addReservasiKendaraan = async (req, res) => {
         const kendaraanExists = await checkIdExists('kendaraan', 'id_kendaraan', id_kendaraan);
 
         if (!kendaraanExists) {
-            return res.status(400).send('Invalid id_kendaraan');  
+            return res.status(400).send('Invalid id_kendaraan');
         }
 
         const sql = 'INSERT INTO reservasi_kendaraan (id_kendaraan, waktu_pemesanan, total, id_user, lokasi, created_at) VALUES (?, ?, ?, ?, ?, NOW())';
