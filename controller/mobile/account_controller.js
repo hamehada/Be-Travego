@@ -14,7 +14,7 @@ exports.getWisata = function (req, res) {
         if (err) {
             return res.status(500).json({ success: false, message: 'Terjadi kesalahan saat mengambil data hotel.' });
         }
-        res.status(200).json({ success: true, hotels: results });
+        res.status(200).json(results);
     });
 };
 
