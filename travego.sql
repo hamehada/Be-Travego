@@ -126,9 +126,9 @@ CREATE TABLE `kendaraan` (
 /*Data for the table `kendaraan` */
 
 insert  into `kendaraan`(`id_kendaraan`,`tipe_kendaraan`,`no_kendaraan`,`jumlah_seat`,`harga_sewa`,`nama_kendaraan`,`gambar_kendaraan`) values 
-(1,'avanza','AB 5445 EZ',7,450000,'Avanza','avanza.jpeg'),
-(2,'xenia','AB 5333 EZ',5,550000,'Xenia','xenia.jpg'),
-(3,'mini bus','AB 54445 C',3,450000,'brio','brio.jpg');
+(1,'MPV','AB 5445 EZ',7,450000,'Avanza','avanza.jpeg'),
+(2,'MPV','AB 5333 EZ',5,550000,'Xenia','xenia.jpg'),
+(3,'Hatchback','AB 54445 C',3,450000,'brio','brio.jpg');
 
 /*Table structure for table `paket_wisata` */
 
@@ -201,7 +201,11 @@ CREATE TABLE `reservasi_kendaraan` (
   `id_user` int(11) NOT NULL,
   `lokasi` text NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `id_kendaraan` (`id_kendaraan`),
+  KEY `id_user` (`id_user`),
+  CONSTRAINT `reservasi_kendaraan_ibfk_1` FOREIGN KEY (`id_kendaraan`) REFERENCES `kendaraan` (`id_kendaraan`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `reservasi_kendaraan_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `reservasi_kendaraan` */
@@ -223,7 +227,9 @@ CREATE TABLE `reservasi_rm` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `id_rm` (`id_rm`),
-  CONSTRAINT `reservasi_rm_ibfk_1` FOREIGN KEY (`id_rm`) REFERENCES `rumahmakan` (`id_rm`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `id_user` (`id_user`),
+  CONSTRAINT `reservasi_rm_ibfk_1` FOREIGN KEY (`id_rm`) REFERENCES `rumahmakan` (`id_rm`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `reservasi_rm_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `reservasi_rm` */
@@ -291,17 +297,18 @@ CREATE TABLE `wisata` (
   `nama_wisata` varchar(30) NOT NULL,
   `lokasi` varchar(50) NOT NULL,
   `harga_tiket` int(11) NOT NULL,
+  `deskripsi_wisata` text NOT NULL,
   `gambar_wisata` text NOT NULL,
   PRIMARY KEY (`id_wisata`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4;
 
 /*Data for the table `wisata` */
 
-insert  into `wisata`(`id_wisata`,`nama_wisata`,`lokasi`,`harga_tiket`,`gambar_wisata`) values 
-(6,'candi prambanan','prambanan sleman',40000,'1729351331300-688548019-95.jpg'),
-(7,'candi prambanan','prambanan sleman',40000,'1729691911408-906178655-puncak sosok.jpg'),
-(8,'candi prambanan','prambanan sleman',40000,'1729461697625-507725335-DiDesa Coret (6).png'),
-(11,'candi ceto','prambanan',15000,'1729525762853-607729681-city1.jpg');
+insert  into `wisata`(`id_wisata`,`nama_wisata`,`lokasi`,`harga_tiket`,`deskripsi_wisata`,`gambar_wisata`) values 
+(6,'candi prambanan','prambanan sleman',40000,'','1729351331300-688548019-95.jpg'),
+(7,'candi prambanan','prambanan sleman',40000,'','1729691911408-906178655-puncak sosok.jpg'),
+(8,'candi prambanan','prambanan sleman',40000,'','1729461697625-507725335-DiDesa Coret (6).png'),
+(11,'candi ceto','prambanan',15000,'','1729525762853-607729681-city1.jpg');
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
