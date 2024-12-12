@@ -35,7 +35,7 @@ exports.register = function (req, res) {
     const Email = req.body.email;
 
     // Validasi input
-    if (!userName || !Nama || !Password || !Email) {
+    if (!userName || !Nama || !noHp || !Password || !Email) {
         return res.status(400).json({ success: false, message: 'Semua field harus diisi.' });
     }
 
@@ -48,7 +48,7 @@ exports.register = function (req, res) {
 
         // SQL query untuk menyimpan pengguna baru
         const sqlQuery = "INSERT INTO user (username, nama, no_hp, password, email) VALUES (?, ?, ?, ?, ?)";
-        db.query(sqlQuery, [userName, Nama, "-", hashedPassword, Email], (err, result) => {
+        db.query(sqlQuery, [userName, Nama, noHp, hashedPassword, Email], (err, result) => {
             if (err) {
                 console.log(err);
                 return res.status(500).json({ success: false, message: 'Terjadi kesalahan saat mendaftarkan pengguna.' });
