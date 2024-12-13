@@ -141,3 +141,13 @@ exports.getImageTransport = (req, res) => {
         console.log(error)
     }
 }
+
+exports.getImageRumahmakan = (req, res) => {
+    try {
+        const { name } = req.params;
+        const filePath = path.join(__dirname, `../../images/rumahmakan/${name}`);
+        res.sendFile(filePath);
+    } catch (error) {
+        console.log(error)
+    }
+}

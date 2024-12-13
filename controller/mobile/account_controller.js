@@ -18,71 +18,82 @@ exports.getWisata = function (req, res) {
     });
 };
 
+exports.getkendaraan = function (req, res)  {
+    const sql = 'SELECT * FROM kendaraan';
+    db.query(sql, (err, result) => {
+    if (err) {
+        console.log(err);
+        res.send(err);
+    } else {
+        console.log(result);
+        res.send(result);
+    }
+    });
+};
 
-    exports.getkendaraan = function (req, res)  {
-
-          const sql = 'SELECT * FROM kendaraan';
-          db.query(sql, (err, result) => {
-            if (err) {
-              console.log(err);
-              res.send(err);
-            } else {
-              console.log(result);
-              res.send(result);
-            }
-          });
-        };
-
-exports.getHotel = function (req, res)  {
-  const {id} = req.params;
-
-    const sql = 'SELECT * FROM hotel WHERE id_hotel = ?';
-    db.query(sql, [id], (err, result) => {
+exports.getrumahmakan = function (req, res) {
+    const sql = 'SELECT * FROM rumahmakan';
+    db.query(sql, (err, result) => {
         if (err) {
             console.log(err);
             res.send(err);
-          } else {
+        } else {
             console.log(result);
-            res.send(result[0]);
-          }
-        });
-      };
+            res.send(result);
+        }
+    });
+};
 
-     exports.getPaketwisata = (req, res) => {
-        const sql= `
-        SELECT * FROM paket_wisata pw
-        INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
-        `;
+exports.getHotel = function (req, res)  {
+    const {id} = req.params;
 
-        db.query(sql, (err, results) => {
-            if (err) {
-                console.error('Error executing query:', err);
-                return res.status(500).send('Error retrieving paket_wisata');
-            }
-            res.status(200).json(results);
-           });
-    };
+    const sql = 'SELECT * FROM hotel WHERE id_hotel = ?';
+    db.query(sql, [id], (err, result) => {
+    if (err) {
+        console.log(err);
+        res.send(err);
+        } else {
+        console.log(result);
+        res.send(result[0]);
+        }
+    });
+};
+
+exports.getPaketwisata = (req, res) => {
+    const sql= `
+    SELECT * FROM paket_wisata pw
+    INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
+    `;
+
+    db.query(sql, (err, results) => {
+    if (err) {
+        console.error('Error executing query:', err);
+        return res.status(500).send('Error retrieving paket_wisata');
+    }
+    res.status(200).json(results);
+    });
+};
 
 
 
-    exports.datadiri = async (req, res) => {
-        const id_user = req.user.id_user; // Ambil ID user dari objek req.user yang diset oleh middleware
+exports.datadiri = async (req, res) => {
+    const id_user = req.user.id_user; // Ambil ID user dari objek req.user yang diset oleh middleware
 
-        const sql = 'SELECT nama, no_hp, email, username FROM user WHERE id_user = ?';
+    const sql = 'SELECT nama, no_hp, email, username FROM user WHERE id_user = ?';
 
-        db.query(sql, [id_user], (err, results) => {
-            if (err) {
-                console.error('Error executing query:', err);
-                return res.status(500).send('Error retrieving user details');
-            }
+    db.query(sql, [id_user], (err, results) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            return res.status(500).send('Error retrieving user details');
+        }
 
-            if (results.length === 0) {
-                return res.status(404).send('User not found');
-            }
+        if (results.length === 0) {
+            return res.status(404).send('User not found');
+        }
 
-            res.status(200).json(results[0]);
-        });
-    };
+        res.status(200).json(results[0]);
+    });
+};
 
     exports.addKendaraan = function (req,res) {
         upload(req, res, function (err) {

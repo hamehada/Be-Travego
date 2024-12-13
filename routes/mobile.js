@@ -9,6 +9,8 @@ module.exports = function (app) {
 
     app.route(`/storage/transport/:name`).get(mobileUser.userController.getImageTransport);
 
+    app.route(`/storage/rumahmakan/:name`).get(mobileUser.userController.getImageRumahmakan);
+
     app.route(`/api/user/register`)
     .post(mobileUser.userController.register);
 
@@ -29,6 +31,9 @@ module.exports = function (app) {
 
     app.route(`/api/user/getPaketwisata/`)
     .get(mobileUser.account_controller.getPaketwisata)
+
+    app.route(`/api/user/getrumahmakan`)
+    .get(mobileUser.account_controller.getrumahmakan)
 
     app.route(`/api/user/datadiri/`)
     .get(authenticateToken,mobileUser.account_controller.datadiri)
@@ -56,7 +61,7 @@ module.exports = function (app) {
     .post(authenticateToken,mobileUser.account_controller.addReservasiKendaraan)
 
     app.route(`/api/user/getReservasiKendaraan/`)
-    .get(authenticateToken,mobileUser.account_controller.getReservasiKendaraan)    
+    .get(authenticateToken,mobileUser.account_controller.getReservasiKendaraan)
 
     app.route(`/api/user/addReservasiRm/`)
     .post(authenticateToken,mobileUser.account_controller.addReservasiRm)
@@ -66,6 +71,6 @@ module.exports = function (app) {
 
     app.route(`/api/user/getWisataByLocation/`)
     .get(authenticateToken,mobileUser.account_controller.getWisataByLocation)
-    
+
 }
 
