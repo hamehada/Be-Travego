@@ -106,13 +106,13 @@ exports.login = function (req, res) {
     });
 };
 
-    exports.editUser = function(req, res) {
-        const id_user = req.params.id;
-        const { nama, no_hp, email, password, username } = req.body;
+exports.editUser = function(req, res) {
+    const id_user = req.user.id_user;
+    const { nama, no_hp, email, username } = req.body;
 
-        const sql = ' UPDATE user SET nama = ?, no_hp = ?, email = ?, password = ?, username = ? WHERE id_user =?';
+    const sql = ' UPDATE user SET nama = ?, no_hp = ?, email = ?, username = ? WHERE id_user =?';
 
-        db.query(sql, [nama, no_hp, email, password, username, id_user], (err, result) => {
+    db.query(sql, [nama, no_hp, email, username, id_user], (err, result) => {
         if (err) {
             console.log(err);
         } else {

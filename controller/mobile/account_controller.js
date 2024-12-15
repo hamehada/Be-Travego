@@ -79,7 +79,7 @@ exports.getPaketwisata = (req, res) => {
 exports.datadiri = async (req, res) => {
     const id_user = req.user.id_user; // Ambil ID user dari objek req.user yang diset oleh middleware
 
-    const sql = 'SELECT nama, no_hp, email, username FROM user WHERE id_user = ?';
+    const sql = 'SELECT * FROM user WHERE id_user = ?';
 
     db.query(sql, [id_user], (err, results) => {
         if (err) {
