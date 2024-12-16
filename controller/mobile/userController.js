@@ -55,7 +55,7 @@ exports.register = function (req, res) {
             }
 
             // Buat token JWT
-            const token = jwt.sign({ id: result.insertId, username: userName, email: Email }, secretKey, { expiresIn: '1h' });
+            const token = jwt.sign({ id: result.insertId, username: userName, email: Email }, secretKey, { expiresIn: '12h' });
 
             // Kirim token sebagai respons
             res.status(201).json({ success: true, message: 'Pengguna berhasil didaftarkan.' });
@@ -115,10 +115,65 @@ exports.editUser = function(req, res) {
     db.query(sql, [nama, no_hp, email, username, id_user], (err, result) => {
         if (err) {
             console.log(err);
+            res.status(500).json({ success: false, message: 'Terjadi kesalahan saat memverifikasi password.' });
         } else {
-            res.send(result);
             console.log(result);
+            res.status(200).json({success: true, data: result});
         }
+    });
+};
+
+exports.changePassword = function(req, res) {
+    const id_user = req.user.id_user;
+    const { username, old_password, new_password } = req.body;
+
+    // Validasi input
+    if (!username || !old_password || !new_password) {
+        return res.status(400).json({ success: false, message: 'Form harus diisi.' });
+    }
+
+    // SQL query untuk mendapatkan pengguna berdasarkan username
+    const sqlQuery = "SELECT * FROM user WHERE username = ?";
+    db.query(sqlQuery, [username], (err, results) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ success: false, message: 'Terjadi kesalahan.' });
+        }
+
+        if (results.length === 0) {
+            return res.status(400).json({ success: false, message: 'Pengguna tidak ditemukan.' });
+        }
+
+        const user = results[0];
+
+        bcrypt.compare(old_password, user.password, (err, isMatch) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ success: false, message: 'Terjadi kesalahan saat memverifikasi password.' });
+            }
+
+            if (!isMatch) {
+                return res.status(400).json({ success: false, message: 'Password salah.' });
+            }
+
+            const sql = ' UPDATE user SET password = ? WHERE id_user = ?';
+
+            bcrypt.hash(new_password, 10, (errorHash, hashedPassword) => {
+                if (errorHash) {
+                    console.log(errorHash);
+                    return res.status(500).json({ success: false, message: errorHash });
+                }
+
+                db.query(sql, [hashedPassword, id_user], (err, result) => {
+                    if (err) {
+                        return res.status(400).json({ success: false, message: err });
+                    } else {
+                        res.status(201).send({ success: true, data: result });
+                    }
+                });
+            });
+        });
+
     });
 };
 

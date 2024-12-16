@@ -17,8 +17,11 @@ module.exports = function (app) {
     app.route(`/api/user/login/`)
     .post(mobileUser.userController.login);
 
-    app.route(`/api/user/editUser/`)
+    app.route(`/api/user/edituser/`)
     .put(authenticateToken, mobileUser.userController.editUser);
+
+    app.route(`/api/user/changepassword/`)
+    .put(authenticateToken, mobileUser.userController.changePassword);
 
     app.route(`/api/user/getWisata`)
     .get(mobileUser.account_controller.getWisata)
