@@ -53,6 +53,10 @@ module.exports = function (app) {
     app.route(`/api/user/viewPesanan/`)
     .get(authenticateToken,mobileUser.account_controller.viewPesanan)
 
+    // INI UNTUK NGEDAPETIN STATUS MIDTRANSA (NGEREFRESH)
+    app.route(`/api/user/viewPesanan/:id`)
+    .get(authenticateToken,mobileUser.account_controller.viewPesananById)
+
     app.route(`/api/user/addPesanankendaraan/`)
     .post(authenticateToken,mobileUser.account_controller.addPesananKendaraan)
 

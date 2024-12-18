@@ -5,13 +5,13 @@ const cors = require('cors');
 const app = express();
 const { db } = require('../src/models/connection');
 const path = require('path');
-
+const morgan = require('morgan');
 
 app.use(cors());
 app.use(express());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true}));
-
+app.use(morgan('dev'));
 
 var routesUser = require("../routes/mobile");
 routesUser(app);
