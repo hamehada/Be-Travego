@@ -44,34 +44,13 @@ const checkIdExists = (table, column, id) => {
 };
 
 exports.addPaketwisata = async (req, res) => {
-    const { nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata } = req.body;
-console.log( { nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata } )
+    const { nama_paket, deskripsi, harga, id_wisata } = req.body;
     try {
-        const [rmExists, hotelExists, kendaraanExists, wisataExists] = await Promise.all([
-            checkIdExists('rumahmakan', 'id_rm', id_rm),
-            checkIdExists('hotel', 'id_hotel', id_hotel),
-            checkIdExists('kendaraan', 'id_kendaraan', id_kendaraan),
-            checkIdExists('wisata', 'id_wisata', id_wisata)
-        ]);
-
-        if (!rmExists) {
-            return res.status(400).send({ success: false, message: 'ID Rumah Makan tidak valid' });
-        }
-        if (!hotelExists) {
-            return res.status(400).send({ success: false, message: 'ID Hotel tidak valid' });
-        }
-        if (!kendaraanExists) {
-            return res.status(400).send({ success: false, message: 'ID Kendaraan tidak valid' });
-        }
-        if (!wisataExists) {
-            return res.status(400).send({ success: false, message: 'ID Wisata tidak valid' });
-        }
-
-        const sql = 'INSERT INTO paket_wisata (nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        db.query(sql, [nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata], (err, result) => {
+        const sql = 'INSERT INTO paket_wisata (nama_paket, deskripsi, harga, id_wisata) VALUES (?, ?, ?, ?)';
+        db.query(sql, [nama_paket, deskripsi, harga, id_wisata], (err, result) => {
             if (err) {
                 console.error('Error executing query:', err);
-                return res.status(500).send('Error adding paket_wisata');                
+                return res.status(500).send('Error adding paket_wisata');
             }
             return res.status(200).send({ success: true, message: 'Paket wisata berhasil ditambahkan' });
         });
@@ -84,35 +63,19 @@ console.log( { nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_w
 
 exports.editPaketwisata = async (req, res) => {
     const { id } = req.params;
-    const { nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata } = req.body;
+    const { nama_paket, deskripsi, harga, id_wisata } = req.body;
 
     try {
-        const [paketExists, rmExists, hotelExists, kendaraanExists, wisataExists] = await Promise.all([
-            checkIdExists('paket_wisata', 'id_paket', id),
-            checkIdExists('rumahmakan', 'id_rm', id_rm),
-            checkIdExists('hotel', 'id_hotel', id_hotel),
-            checkIdExists('kendaraan', 'id_kendaraan', id_kendaraan),
+        const [wisataExists] = await Promise.all([
             checkIdExists('wisata', 'id_wisata', id_wisata)
         ]);
 
-        if (!paketExists) {
-            return res.send({ success: false, message: 'ID Paket tidak valid' });
-        }
-        if (!rmExists) {
-            return res.send({ success: false, message: 'ID Rumah Makan tidak valid' });
-        }
-        if (!hotelExists) {
-            return res.send({ success: false, message: 'ID Hotel tidak valid' });
-        }
-        if (!kendaraanExists) {
-            return res.send({ success: false, message: 'ID Kendaraan tidak valid' });
-        }
         if (!wisataExists) {
             return res.send({ success: false, message: 'ID Wisata tidak valid' });
         }
 
-        const sql = 'UPDATE paket_wisata SET nama_paket = ?, deskripsi = ?, id_rm = ?, id_hotel = ?, id_kendaraan = ?, harga = ?, id_wisata = ? WHERE id_paket = ?';
-        db.query(sql, [nama_paket, deskripsi, id_rm, id_hotel, id_kendaraan, harga, id_wisata, id], (err, result) => {
+        const sql = 'UPDATE paket_wisata SET nama_paket = ?, deskripsi = ?, harga = ?, id_wisata = ? WHERE id_paket = ?';
+        db.query(sql, [nama_paket, deskripsi, harga, id_wisata, id], (err, result) => {
             if (err) {
                 console.error('Error executing query:', err);
                 res.status(500).send('Error updating paket_wisata');
@@ -237,12 +200,9 @@ exports.getWisatas = function (req, res) {
 exports.getPaketWisata = function (req, res) {
     const { id } = req.params;
     const sql = `
-        SELECT pw.*, w.nama_wisata, w.gambar_wisata, rm.nama_rm, h.nama_hotel, h.gambar_hotel, k.nama_kendaraan, k.gambar_kendaraan
+        SELECT pw.*, w.nama_wisata, w.gambar_wisata
         FROM paket_wisata pw
-        INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
-        INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
-        INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
-        INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
+        INNER JOIN wisata w ON pw.id_wisata = w.id_wisata                        
         WHERE pw.id_paket = ?
     `;
     db.query(sql, [id], (err, result) => {
@@ -270,7 +230,7 @@ exports.getPaketWisata = function (req, res) {
             },
             rumahmakan: {
                 id_rm: r.id_rm,
-                nama_rm: r.nama_rm,                
+                nama_rm: r.nama_rm,
             },
             hotel: {
                 id_hotel: r.id_hotel,
@@ -290,12 +250,9 @@ exports.getPaketWisata = function (req, res) {
 
 exports.getPaketWisatas = function (req, res) {
     const sql = `
-        SELECT pw.*, w.nama_wisata, w.gambar_wisata, rm.nama_rm, h.nama_hotel, h.gambar_hotel, k.nama_kendaraan, k.gambar_kendaraan
+        SELECT pw.*, w.nama_wisata, w.gambar_wisata
         FROM paket_wisata pw
-        INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
-        INNER JOIN rumahmakan rm ON pw.id_rm = rm.id_rm
-        INNER JOIN hotel h ON pw.id_hotel = h.id_hotel
-        INNER JOIN kendaraan k ON pw.id_kendaraan = k.id_kendaraan
+        INNER JOIN wisata w ON pw.id_wisata = w.id_wisata                        
         ORDER BY pw.id_paket DESC        
     `;
     db.query(sql, (err, result) => {
