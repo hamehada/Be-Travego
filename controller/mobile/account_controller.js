@@ -211,12 +211,12 @@ exports.addDetailPesananKendaraan = async (req, res) => {
 //             INNER JOIN paket_wisata pw ON dp.id_paket_wisata = pw.id_paket
 //             INNER JOIN wisata w ON pw.id_wisata = w.id_wisata
 //             INNER JOIN user u ON p.id_user = u.id_user
-//             WHERE p.id_user = ?            
+//             WHERE p.id_user = ?
 //         `;
 
 //     db.query(sql, [id_user], (err, results) => {
 //         if (err) {
-//             console.error('Error executing query:', err);            
+//             console.error('Error executing query:', err);
 //             return res.status(500).json({ success: false, message: 'Error retrieving data' });
 //         }
 //         console.log(results);
@@ -781,7 +781,7 @@ exports.addReservasiRm = async (req, res) => {
 
 exports.getReservasiRm = async (req, res) => {
     const id_user = req.user.id_user;
-    const sql = 'SELECT * FROM reservasi_rm WHERE id_user = ? ORDER BY created_at DESC';
+    const sql = 'SELECT * FROM reservasi_rm INNER JOIN rumahmakan ON reservasi_rm.id_rm = rumahmakan.id_rm WHERE id_user = ? ORDER BY created_at DESC';
 
     try {
         db.query(sql, [id_user], (err, result) => {
