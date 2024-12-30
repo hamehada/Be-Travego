@@ -23,6 +23,7 @@ routesAdmin(app);
 app.use('/images/wisata', express.static(path.join(__dirname, '../images/wisata')));
 app.use('/images/transport', express.static(path.join(__dirname, '../images/transport')));
 app.use('/images/hotel', express.static(path.join(__dirname, '../images/hotel')));
+app.use('/images/rumahmakan', express.static(path.join(__dirname, '../images/rumahmakan')));
 
 app.listen(process.env.PORT, () => {
     console.log(`Server running on port ${process.env.PORT}`);
